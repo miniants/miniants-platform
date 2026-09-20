@@ -19,16 +19,16 @@ class LoggerNameConverterTest {
         assertEquals("jwy.outbound        ", LoggerNameConverter.format("jwy.outbound"));
         assertEquals(20, LoggerNameConverter.format("jwy.outbound").length());
         assertEquals("SysUserServiceImpl  ", LoggerNameConverter.format(
-                "cn.edu.ustb.jwy.system.service.impl.SysUserServiceImpl"));
+                "com.example.app.system.service.impl.SysUserServiceImpl"));
         assertEquals(20, LoggerNameConverter.format(
-                "cn.edu.ustb.jwy.system.service.impl.SysUserServiceImpl").length());
+                "com.example.app.system.service.impl.SysUserServiceImpl").length());
         assertEquals("pl.wx     ", LoggerNameConverter.format(
                 "cn.binarywang.wx.miniapp.api.impl.BaseWxMaServiceImpl"));
         assertEquals("pl.wx     ", LoggerNameConverter.format(
                 "me.chanjar.weixin.common.util.http.BaseWxHttp"));
         assertEquals("inUserDetailsService", LoggerNameConverter.format(
-                "cn.edu.ustb.jwy.auth.identity.WebAdminUserDetailsService"));
+                "com.example.app.auth.identity.WebAdminUserDetailsService"));
         assertEquals(20, LoggerNameConverter.format(
-                "cn.edu.ustb.jwy.auth.identity.WebAdminUserDetailsService").length());
+                "com.example.app.auth.identity.WebAdminUserDetailsService").length());
     }
 }

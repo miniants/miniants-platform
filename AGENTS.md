@@ -1,13 +1,13 @@
 ---
-title: JWY Platform 开发约定
+title: Miniants Platform 开发约定
 status: active
 owner: platform
-last_verified: 2026-08-26
+last_verified: 2026-09-20
 ---
 
-# JWY Platform
+# Miniants Platform
 
-适用于 `jwy-platform/`。设计见 [平台内核](./doc/00-architecture/10-kernel.md)，文档入口见 [doc/README.md](./doc/README.md)。参与方式见 [CONTRIBUTING.md](CONTRIBUTING.md)。
+适用于本仓库。设计见 [平台内核](./doc/00-architecture/10-kernel.md)，文档入口见 [doc/README.md](./doc/README.md)。参与方式见 [CONTRIBUTING.md](CONTRIBUTING.md)。
 
 ## Controller
 

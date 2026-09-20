@@ -8,7 +8,7 @@ import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import java.util.Collections;
 
 /**
- * 已解析 {@link UserAccount} 的进程内 grant（微信 / USTB / 扫码等 {@link AccountTokenIssuer} 路径）。
+ * 已解析 {@link UserAccount} 的进程内 grant（外部身份 / 扫码等 {@link AccountTokenIssuer} 路径）。
  * JWT 定制器在首次出票时从此 grant 取账号，不依赖 principal.details 或尚未写入的 authorization 属性。
  */
 public final class ResolvedAccountGrant extends AbstractAuthenticationToken {

@@ -1,13 +1,13 @@
 ---
-title: JWY Platform 文档
+title: Miniants Platform 文档
 status: active
 owner: platform
-last_verified: 2026-08-26
+last_verified: 2026-09-20
 ---
 
-# JWY Platform 文档
+# Miniants Platform 文档
 
-本目录是 `jwy-platform` 的独立文档入口，只描述可跨项目复用的内核能力。具体学校、业务权限码、渠道协议、部署拓扑和迁移记录属于采用方，不进入本目录。
+本目录是独立仓的文档入口，只描述可跨项目复用的内核能力。具体学校、业务权限码、渠道协议、部署拓扑和迁移记录属于采用方，不进入本目录。
 
 ## 阅读顺序
 

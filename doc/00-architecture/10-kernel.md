@@ -7,7 +7,7 @@ last_verified: 2026-09-16
 
 # 平台内核设计
 
-`jwy-platform` 是 Spring Boot 4.1、JDK 21、Gradle 8.14 的独立构建，包名为 `cn.miniants.platform.*`。它提供跨项目可复用的后端基座，不承载采用方的业务语义、部署拓扑或渠道实现。
+Miniants Platform 是 Spring Boot 4.1、JDK 21、Gradle 8.14 的独立构建，包名为 `cn.miniants.platform.*`。它提供跨项目可复用的后端基座，不承载采用方的业务语义、部署拓扑或渠道实现。
 
 ## 1. 构建与边界
 

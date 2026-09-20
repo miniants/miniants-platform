@@ -21,7 +21,7 @@ last_verified: 2026-09-16
 
 1. 内核采用 Spring Boot 4.1、JDK 21、Gradle 8.14 独立构建。HTTP JSON 走 Jackson 3；MVC 仍只把超大 Long 写成字符串。
 2. 源码联调使用 Gradle composite build，不把内核并入采用方统一 `allprojects`。
-3. composite build 的根 `test` 不覆盖 included build；必须执行 `jwy-platform/gradlew testAll` 或显式聚合任务。
+3. 采用方默认消费已发布构件；本地源码联调才允许 composite。内核回归执行本仓 `./gradlew testAll`。
 4. `platform-demo` 是验收应用，不作为库发布。
 5. `platform-starter` 只聚合普遍需要且具备安全默认值的模块；storage、queue、admin、tenant、ratelimit-admin 按需引入。WebFlux 应用使用 `platform-starter-webflux`，禁止把 Servlet 安全链带入。
 
