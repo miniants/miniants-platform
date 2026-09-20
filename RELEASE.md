@@ -13,9 +13,12 @@
 
 1. `./gradlew testAll generateSbom`
 2. 更新 `CHANGELOG.md` 与版本号（`build.gradle` / `gradle.properties` 保持一致）
-3. 配置 `CENTRAL_USERNAME` / `CENTRAL_PASSWORD` / `SIGNING_KEY` / `SIGNING_PASSWORD`
-4. `./gradlew publish`
-5. 在 Central Portal 完成发布
+3. 配置发布身份。新名 `centralUsername` / `centralPassword` / `signingKey` /
+   `signingPassword`，或沿用 storm-boot 的 `mavenCentralUsername` /
+   `mavenCentralPassword` / `signingInMemoryKey` / `signingInMemoryKeyPassword`。
+   密码必须是 Central Portal **user token**，不是登录密码。
+4. `./gradlew publishToMavenCentral`（Central Portal Publisher API，部署名 `miniants-platform:<version>`）
+5. 在 https://central.sonatype.com/publishing/deployments 点 Publish
 6. 打 tag：`vX.Y.Z`
 
 RC 先发 `2.0.0-rc.1`。一次采用方发布/回退演练后再发 `2.0.0`。

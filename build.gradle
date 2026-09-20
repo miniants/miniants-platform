@@ -71,6 +71,16 @@ configure(publishedProjects()) { sub ->
         publications {
             maven(MavenPublication) {
                 from components.findByName(sub.name == 'platform-bom' ? 'javaPlatform' : 'java')
+                if (sub.name != 'platform-bom') {
+                    versionMapping {
+                        usage('java-api') {
+                            fromResolutionOf('runtimeClasspath')
+                        }
+                        usage('java-runtime') {
+                            fromResolutionResult()
+                        }
+                    }
+                }
                 pom {
                     name = sub.name
                     description = 'Miniants Platform：统一返回体、错误码、鉴权、可观测、集成原语'
@@ -92,9 +102,9 @@ configure(publishedProjects()) { sub ->
                         developerConnection = 'scm:git:ssh://git@github.com/miniants/miniants-platform.git'
                         url = 'https://github.com/miniants/miniants-platform'
                     }
-                    if (sub.name == 'platform-bom') {
-                        withXml {
-                            def rootNode = asNode()
+                    withXml {
+                        def rootNode = asNode()
+                        if (sub.name == 'platform-bom') {
                             if (rootNode.dependencyManagement.isEmpty()) {
                                 def deps = rootNode.appendNode('dependencyManagement').appendNode('dependencies')
                                 sub.configurations.named('api').get().allDependencyConstraints.each { constraint ->
@@ -104,39 +114,50 @@ configure(publishedProjects()) { sub ->
                                     dep.appendNode('version', constraint.version)
                                 }
                             }
+                            return
+                        }
+                        def resolved = [:]
+                        sub.configurations.runtimeClasspath.resolvedConfiguration.resolvedArtifacts.each { artifact ->
+                            def id = artifact.moduleVersion.id
+                            resolved["${id.group}:${id.name}"] = id.version
+                        }
+                        rootNode.dependencies.dependency.each { dep ->
+                            def key = "${dep.groupId.text()}:${dep.artifactId.text()}"
+                            if (dep.version.isEmpty() || !dep.version.text()) {
+                                def ver = resolved[key]
+                                if (ver) {
+                                    dep.appendNode('version', ver)
+                                }
+                            }
                         }
                     }
-                }
-            }
-        }
-        repositories {
-            maven {
-                // OSSRH 已于 2025-06-30 停服，这是 Central Portal 的兼容端点。
-                // 凭据是 Portal user token，不是登录密码；只从属性 / 环境变量取，不入库。
-                name = 'central'
-                url = 'https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/'
-                credentials {
-                    username = providers.gradleProperty('centralUsername')
-                            .orElse(providers.environmentVariable('CENTRAL_USERNAME')).getOrElse('')
-                    password = providers.gradleProperty('centralPassword')
-                            .orElse(providers.environmentVariable('CENTRAL_PASSWORD')).getOrElse('')
                 }
             }
         }
     }
 
     signing {
-        // 没配密钥就不签，本地 publishToMavenLocal 不该因此失败；发 Central 前必须配上
+        // 有内存密钥就签；Portal 正式发布必须带签名。
         def signingKey = providers.gradleProperty('signingKey')
-                .orElse(providers.environmentVariable('SIGNING_KEY')).getOrNull()
+                .orElse(providers.gradleProperty('signingInMemoryKey'))
+                .orElse(providers.environmentVariable('SIGNING_KEY'))
+                .getOrNull()
         def signingPassword = providers.gradleProperty('signingPassword')
-                .orElse(providers.environmentVariable('SIGNING_PASSWORD')).getOrNull()
-        setRequired { signingKey != null && gradle.taskGraph.hasTask("${sub.path}:publish") }
+                .orElse(providers.gradleProperty('signingInMemoryKeyPassword'))
+                .orElse(providers.environmentVariable('SIGNING_PASSWORD'))
+                .getOrNull()
+        setRequired { signingKey != null }
         if (signingKey != null) {
             useInMemoryPgpKeys(signingKey, signingPassword)
             sign publishing.publications.maven
         }
     }
+}
+
+tasks.register('publishToMavenCentral') {
+    group = 'publishing'
+    description = '经 Central Portal Publisher API 上传整仓聚合（USER_MANAGED，不走 OSSRH 兼容口）'
+    dependsOn 'nmcpPublishAggregationToCentralPortal'
 }
 
 // 复合构建下 `:test` 只跑根工程；聚合任务供业务仓 checkAll 引用，见 doc/README.md

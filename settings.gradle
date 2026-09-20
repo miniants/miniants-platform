@@ -6,6 +6,27 @@ pluginManagement {
     }
 }
 
+plugins {
+    id 'com.gradleup.nmcp.settings' version '1.6.2'
+}
+
+def centralUser = providers.gradleProperty('mavenCentralUsername')
+        .orElse(providers.gradleProperty('centralUsername'))
+        .orElse(providers.environmentVariable('CENTRAL_USERNAME'))
+def centralPass = providers.gradleProperty('mavenCentralPassword')
+        .orElse(providers.gradleProperty('centralPassword'))
+        .orElse(providers.environmentVariable('CENTRAL_PASSWORD'))
+def platformVersion = providers.gradleProperty('version').orElse('2.0.0-rc.1')
+
+nmcpSettings {
+    centralPortal {
+        username = centralUser.orNull
+        password = centralPass.orNull
+        publishingType = 'USER_MANAGED'
+        publicationName = "miniants-platform:${platformVersion.get()}"
+    }
+}
+
 rootProject.name = 'miniants-platform'
 
 include 'platform-bom'
