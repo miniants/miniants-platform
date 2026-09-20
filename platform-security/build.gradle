@@ -1,0 +1,20 @@
+plugins {
+    id 'java-library'
+}
+
+dependencies {
+    api platform(project(':platform-bom'))
+    api project(':platform-core')
+    compileOnly project(':platform-data')
+    compileOnly 'org.springframework.boot:spring-boot-starter-security-oauth2-authorization-server'
+    compileOnly 'org.springframework.security:spring-security-oauth2-jose'
+    compileOnly 'org.springframework.boot:spring-boot-starter-data-redis'
+    compileOnly 'org.springframework.boot:spring-boot-starter-web'
+    compileOnly 'org.springframework.boot:spring-boot-starter-jdbc'
+    testImplementation project(':platform-data')
+    testImplementation 'org.springframework.boot:spring-boot-starter-security-oauth2-authorization-server'
+    testImplementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-jdbc'
+    testImplementation 'com.h2database:h2'
+}

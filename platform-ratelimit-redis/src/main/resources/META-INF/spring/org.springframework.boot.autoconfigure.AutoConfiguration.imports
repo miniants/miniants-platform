@@ -1,0 +1,4 @@
+cn.miniants.platform.ratelimit.redis.config.PlatformRateLimitRedisBackendGuardAutoConfiguration
+cn.miniants.platform.ratelimit.redis.config.PlatformRateLimitReactiveRedisGuardAutoConfiguration
+cn.miniants.platform.ratelimit.redis.config.PlatformRateLimitRedisAutoConfiguration
+cn.miniants.platform.ratelimit.redis.config.PlatformRateLimitDynamicPolicyAutoConfiguration

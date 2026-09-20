@@ -1,0 +1,262 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '4.1.1' apply false
+    id 'io.spring.dependency-management' version '1.1.7' apply false
+}
+
+allprojects {
+    group = 'cn.miniants.platform'
+    version = '2.0.0-rc.1'
+
+    repositories {
+        mavenCentral()
+        maven { url = 'https://maven.aliyun.com/repository/public' }
+    }
+}
+
+// platform-demo 是参考应用，不是库，不发布。admin-ui 是预构建静态资源 JAR，随 Maven 发布。
+def publishedProjects = { subprojects.findAll {
+    it.name != 'platform-demo'
+} }
+
+subprojects { sub ->
+    if (sub.name == 'platform-bom' || sub.name == 'platform-ratelimit-admin-ui') {
+        return
+    }
+    apply plugin: 'java-library'
+
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(21)
+        }
+        if (sub.name != 'platform-demo') {
+            // Central 要求每个构件都带 sources 与 javadoc
+            withSourcesJar()
+            withJavadocJar()
+        }
+    }
+
+    tasks.withType(Javadoc).configureEach {
+        options.encoding = 'UTF-8'
+        // 注释是给读代码的人看的，缺 @param 不该挡住发布
+        options.addStringOption('Xdoclint:none', '-quiet')
+    }
+
+    tasks.withType(JavaCompile).configureEach {
+        options.encoding = 'UTF-8'
+        options.compilerArgs.add('-parameters')
+        options.compilerArgs.addAll(['-Xlint:all', '-Xlint:-processing', '-Xlint:-serial'])
+    }
+
+    tasks.withType(Test).configureEach {
+        useJUnitPlatform()
+        systemProperty 'platform.update.golden',
+                providers.systemProperty('platform.update.golden').getOrElse('false')
+    }
+    dependencies {
+        testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    }
+
+    configurations.configureEach {
+        exclude group: 'org.springframework.boot', module: 'spring-boot-grpc-server'
+        exclude group: 'org.springframework.boot', module: 'spring-boot-grpc-client'
+    }
+}
+
+configure(publishedProjects()) { sub ->
+    apply plugin: 'maven-publish'
+    apply plugin: 'signing'
+
+    publishing {
+        publications {
+            maven(MavenPublication) {
+                from components.findByName(sub.name == 'platform-bom' ? 'javaPlatform' : 'java')
+                pom {
+                    name = sub.name
+                    description = 'Miniants Platform：统一返回体、错误码、鉴权、可观测、集成原语'
+                    url = 'https://github.com/miniants/miniants-platform'
+                    licenses {
+                        license {
+                            name = 'Apache License, Version 2.0'
+                            url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
+                        }
+                    }
+                    developers {
+                        developer {
+                            id = 'miniants'
+                            name = 'miniants'
+                        }
+                    }
+                    scm {
+                        connection = 'scm:git:https://github.com/miniants/miniants-platform.git'
+                        developerConnection = 'scm:git:ssh://git@github.com/miniants/miniants-platform.git'
+                        url = 'https://github.com/miniants/miniants-platform'
+                    }
+                    if (sub.name == 'platform-bom') {
+                        withXml {
+                            def rootNode = asNode()
+                            if (rootNode.dependencyManagement.isEmpty()) {
+                                def deps = rootNode.appendNode('dependencyManagement').appendNode('dependencies')
+                                sub.configurations.named('api').get().allDependencyConstraints.each { constraint ->
+                                    def dep = deps.appendNode('dependency')
+                                    dep.appendNode('groupId', constraint.group)
+                                    dep.appendNode('artifactId', constraint.name)
+                                    dep.appendNode('version', constraint.version)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        repositories {
+            maven {
+                // OSSRH 已于 2025-06-30 停服，这是 Central Portal 的兼容端点。
+                // 凭据是 Portal user token，不是登录密码；只从属性 / 环境变量取，不入库。
+                name = 'central'
+                url = 'https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/'
+                credentials {
+                    username = providers.gradleProperty('centralUsername')
+                            .orElse(providers.environmentVariable('CENTRAL_USERNAME')).getOrElse('')
+                    password = providers.gradleProperty('centralPassword')
+                            .orElse(providers.environmentVariable('CENTRAL_PASSWORD')).getOrElse('')
+                }
+            }
+        }
+    }
+
+    signing {
+        // 没配密钥就不签，本地 publishToMavenLocal 不该因此失败；发 Central 前必须配上
+        def signingKey = providers.gradleProperty('signingKey')
+                .orElse(providers.environmentVariable('SIGNING_KEY')).getOrNull()
+        def signingPassword = providers.gradleProperty('signingPassword')
+                .orElse(providers.environmentVariable('SIGNING_PASSWORD')).getOrNull()
+        setRequired { signingKey != null && gradle.taskGraph.hasTask("${sub.path}:publish") }
+        if (signingKey != null) {
+            useInMemoryPgpKeys(signingKey, signingPassword)
+            sign publishing.publications.maven
+        }
+    }
+}
+
+// 复合构建下 `:test` 只跑根工程；聚合任务供业务仓 checkAll 引用，见 doc/README.md
+tasks.register('verifyPublishedPoms') {
+    group = 'verification'
+    description = '断言已发布 POM 坐标完整，且 admin 能解析 admin-ui'
+    dependsOn publishedProjects().collect { ":${it.name}:generatePomFileForMavenPublication" }
+    doLast {
+        def group = 'cn.miniants.platform'
+        def version = project.version
+        def required = [
+                'platform-bom',
+                'platform-core',
+                'platform-core-webmvc',
+                'platform-core-webflux',
+                'platform-data',
+                'platform-security',
+                'platform-admin',
+                'platform-tenant',
+                'platform-observability',
+                'platform-integration',
+                'platform-storage',
+                'platform-starter',
+                'platform-starter-webflux',
+                'platform-ops',
+                'platform-queue',
+                'platform-ratelimit-core',
+                'platform-ratelimit-redis',
+                'platform-ratelimit-webmvc',
+                'platform-ratelimit-webflux',
+                'platform-ratelimit-admin',
+                'platform-ratelimit-admin-ui'
+        ]
+        def unpublished = ['platform-demo']
+        required.each { name ->
+            def pom = file("${project(name).layout.buildDirectory.get()}/publications/maven/pom-default.xml")
+            if (!pom.exists()) {
+                throw new GradleException("缺少发布 POM: ${name}")
+            }
+            def text = pom.getText('UTF-8')
+            if (!text.contains("<groupId>${group}</groupId>") || !text.contains("<artifactId>${name}</artifactId>")) {
+                throw new GradleException("${name} POM 缺少完整坐标")
+            }
+            unpublished.each { banned ->
+                if (text.contains("<artifactId>${banned}</artifactId>")) {
+                    throw new GradleException("${name} POM 引用了未发布模块 ${banned}")
+                }
+            }
+        }
+        def adminPom = file("${project('platform-ratelimit-admin').layout.buildDirectory.get()}/publications/maven/pom-default.xml")
+            .getText('UTF-8')
+        if (!adminPom.contains('<artifactId>platform-ratelimit-admin-ui</artifactId>')) {
+            throw new GradleException('platform-ratelimit-admin POM 未声明 platform-ratelimit-admin-ui 依赖')
+        }
+        def bomPom = file("${project('platform-bom').layout.buildDirectory.get()}/publications/maven/pom-default.xml")
+                .getText('UTF-8')
+        required.findAll { it != 'platform-bom' }.each { artifact ->
+            if (!bomPom.contains("<artifactId>${artifact}</artifactId>")) {
+                throw new GradleException("platform-bom 未约束 ${artifact}")
+            }
+        }
+    }
+}
+
+tasks.register('verifyBrandNeutrality') {
+    group = 'verification'
+    description = '主代码不得依赖采用方包名或产品专属常量'
+    doLast {
+        def banned = [
+                'cn.edu.ustb',
+                'USTB_AUTH',
+                '/auth/open/miniapp/login',
+                'sys:dict:page',
+                'sys:operLog:page'
+        ]
+        def hits = []
+        fileTree(rootDir) {
+            include '**/src/main/java/**/*.java'
+            exclude '**/build/**'
+        }.each { source ->
+            def text = source.getText('UTF-8')
+            banned.each { token ->
+                if (text.contains(token)) {
+                    hits << "${source}: ${token}"
+                }
+            }
+        }
+        if (!hits.isEmpty()) {
+            throw new GradleException("内核主代码含采用方语义:\n${hits.join('\n')}")
+        }
+    }
+}
+
+tasks.register('generateSbom') {
+    group = 'verification'
+    description = '写出各发布模块的运行时依赖清单'
+    doLast {
+        def reportDir = file("${layout.buildDirectory.get()}/reports/sbom")
+        reportDir.mkdirs()
+        publishedProjects().each { sub ->
+            if (!sub.pluginManager.hasPlugin('java-library')) {
+                return
+            }
+            def report = new File(reportDir, "${sub.name}-runtime.txt")
+            report.text = sub.configurations.runtimeClasspath.incoming.resolutionResult.allDependencies
+                    .collect { it.toString() }
+                    .sort()
+                    .join('\n')
+        }
+    }
+}
+
+tasks.register('testAll') {
+    group = 'verification'
+    description = '跑全部内核模块的测试与发布元数据检查'
+    dependsOn subprojects.findAll {
+        it.name != 'platform-bom'
+    }.collect { "${it.path}:test" }
+    dependsOn 'verifyPublishedPoms'
+    dependsOn 'verifyBrandNeutrality'
+    dependsOn ':platform-starter:verifyIsolation'
+    dependsOn ':platform-starter-webflux:verifyIsolation'
+}

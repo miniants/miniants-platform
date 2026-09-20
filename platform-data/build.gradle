@@ -1,0 +1,23 @@
+plugins {
+    id 'java-library'
+}
+
+dependencies {
+    api platform(project(':platform-bom'))
+    api project(':platform-core')
+    api 'com.baomidou:mybatis-plus-spring-boot4-starter'
+    api 'com.baomidou:mybatis-plus-jsqlparser'
+    // 只有用 POINT 列的项目需要，不强加给所有人
+    compileOnly 'org.locationtech.jts:jts-core'
+    compileOnly 'org.springframework.data:spring-data-commons'
+    compileOnly 'org.flywaydb:flyway-core'
+    // MyBatis-Plus 包含 Kotlin wrapper；javac 会读取其 Metadata 注解。
+    compileOnly 'org.jetbrains.kotlin:kotlin-stdlib'
+    testImplementation 'org.locationtech.jts:jts-core'
+    testImplementation 'org.springframework.data:spring-data-commons'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.flywaydb:flyway-core'
+    testImplementation 'com.baomidou:dynamic-datasource-spring-boot4-starter:4.5.0'
+    // recoverByIds 注入的是拼出来的 SQL，只有真跑一遍才知道两种逻辑删除列都成立
+    testImplementation 'com.h2database:h2'
+}

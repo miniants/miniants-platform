@@ -1,0 +1,3 @@
+cn.miniants.platform.core.i18n.PlatformMvcLocaleAutoConfiguration
+cn.miniants.platform.core.PlatformCoreAutoConfiguration
+cn.miniants.platform.core.json.PlatformWebBindingAutoConfiguration

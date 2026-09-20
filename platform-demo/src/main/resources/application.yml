@@ -1,0 +1,42 @@
+spring:
+  application:
+    name: platform-demo
+  datasource:
+    url: jdbc:h2:mem:platform;MODE=MySQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    table: platform_schema_history
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.security.oauth2.server.servlet.OAuth2AuthorizationServerAutoConfiguration
+      - org.springframework.boot.autoconfigure.security.oauth2.server.servlet.OAuth2AuthorizationServerJwtAutoConfiguration
+      - org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
+server:
+  port: 18080
+platform:
+  security:
+    sas:
+      enabled: true
+      allow-ephemeral-keys: true
+      issuer: http://localhost:18080
+      # 演示项目怎么把自己的 grant 加进公开口黑名单：内核只默认拒 password
+      public-denied-grants: [password, external]
+    bff:
+      enabled: true
+      client-id: platform-demo
+  tenant:
+    enabled: false
+  observability:
+    enabled: true
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus
+  metrics:
+    tags:
+      application: ${spring.application.name}

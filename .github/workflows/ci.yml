@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Test and publish metadata
+        run: ./gradlew testAll generateSbom --no-daemon
+      - name: Publish to Maven Local
+        run: ./gradlew publishToMavenLocal --no-daemon
+      - name: Consumer smoke
+        run: ./gradlew --project-dir consumer-smoke test --no-daemon
+
+  secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Scan history for obvious secrets
+        run: |
+          if git grep -nE 'BEGIN (RSA |OPENSSH )?PRIVATE KEY|AKIA[0-9A-Z]{16}|password\\s*[:=]\\s*['\''"][^''\''"]{8,}' -- '*.java' '*.yml' '*.properties' ':!.github/**' ':!**/src/test/**' ':!**/application-demo.yml'; then
+            echo 'Potential secret found in tracked source'
+            exit 1
+          fi
+          echo 'No obvious secrets in main sources'

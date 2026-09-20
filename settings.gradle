@@ -1,0 +1,32 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        mavenCentral()
+        maven { url = 'https://maven.aliyun.com/repository/public' }
+    }
+}
+
+rootProject.name = 'miniants-platform'
+
+include 'platform-bom'
+include 'platform-core'
+include 'platform-core-webmvc'
+include 'platform-core-webflux'
+include 'platform-data'
+include 'platform-security'
+include 'platform-admin'
+include 'platform-tenant'
+include 'platform-observability'
+include 'platform-integration'
+include 'platform-storage'
+include 'platform-starter'
+include 'platform-starter-webflux'
+include 'platform-ops'
+include 'platform-queue'
+include 'platform-ratelimit-core'
+include 'platform-ratelimit-redis'
+include 'platform-ratelimit-webmvc'
+include 'platform-ratelimit-webflux'
+include 'platform-ratelimit-admin'
+include 'platform-ratelimit-admin-ui'
+include 'platform-demo'

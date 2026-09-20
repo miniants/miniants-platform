@@ -1,0 +1,16 @@
+server:
+  port: 18081
+spring:
+  datasource:
+    url: jdbc:h2:mem:smoke;MODE=MySQL;DB_CLOSE_DELAY=-1
+    username: sa
+    password: ""
+  flyway:
+    enabled: false
+platform:
+  security:
+    enforcement: shadow
+    sas:
+      enabled: false
+    bff:
+      enabled: false

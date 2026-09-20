@@ -1,0 +1,47 @@
+plugins {
+    id 'java-library'
+}
+
+/**
+ * WebFlux 产品聚合入口。禁止把 Servlet 安全链或 WebMVC 间接带入。
+ *
+ * 刻意不含 platform-security（当前为 Servlet 拦截器）、platform-admin、platform-ratelimit-admin。
+ */
+dependencies {
+    api platform(project(':platform-bom'))
+    api project(':platform-core')
+    api project(':platform-core-webflux')
+    api project(':platform-data')
+    api project(':platform-integration')
+    api project(':platform-ratelimit-webflux')
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+tasks.register('verifyIsolation') {
+    group = 'verification'
+    dependsOn configurations.runtimeClasspath
+    doLast {
+        def forbidden = [
+                'spring-webmvc',
+                'spring-boot-starter-web',
+                'tomcat-embed-core',
+                'platform-ratelimit-webmvc',
+                'platform-ratelimit-admin'
+        ]
+        def artifactIds = configurations.runtimeClasspath.incoming.artifacts.artifacts.collect {
+            def display = it.id.componentIdentifier.displayName
+            def parts = display.split(':')
+            parts.length >= 2 ? parts[1] : display
+        }
+        forbidden.each { name ->
+            if (artifactIds.contains(name)) {
+                throw new GradleException("platform-starter-webflux runtimeClasspath 含有禁止依赖 ${name}")
+            }
+        }
+    }
+}
+
+tasks.named('check') {
+    dependsOn 'verifyIsolation'
+}

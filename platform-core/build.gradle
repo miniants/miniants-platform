@@ -1,0 +1,14 @@
+plugins {
+    id 'java-library'
+}
+
+dependencies {
+    api platform(project(':platform-bom'))
+    // 中性内核：不传递 Servlet / WebMVC，双栈由 platform-core-webmvc / webflux 承接
+    api 'org.springframework.boot:spring-boot-starter'
+    api 'org.springframework.boot:spring-boot-starter-jackson'
+    api 'org.springframework.boot:spring-boot-starter-validation'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'com.tngtech.archunit:archunit-junit5:1.3.0'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}

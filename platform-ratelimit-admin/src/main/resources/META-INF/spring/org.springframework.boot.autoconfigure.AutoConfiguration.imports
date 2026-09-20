@@ -1,0 +1,2 @@
+cn.miniants.platform.ratelimit.admin.PlatformRateLimitAdminAutoConfiguration
+cn.miniants.platform.ratelimit.admin.ui.PlatformRateLimitAdminUiAutoConfiguration

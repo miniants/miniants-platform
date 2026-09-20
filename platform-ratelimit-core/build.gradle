@@ -1,0 +1,16 @@
+plugins {
+    id 'java-library'
+}
+
+dependencies {
+    api platform(project(':platform-bom'))
+    api project(':platform-core')
+    api 'org.springframework.boot:spring-boot-starter'
+    compileOnly 'io.micrometer:micrometer-core'
+    compileOnly 'org.springframework.boot:spring-boot-starter-actuator'
+    compileOnly 'io.projectreactor:reactor-core'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'io.micrometer:micrometer-core'
+    testImplementation 'org.springframework.boot:spring-boot-starter-actuator'
+    testImplementation 'io.projectreactor:reactor-core'
+}

@@ -1,0 +1,3 @@
+sql=((real_name LIKE #{ew.paramNameValuePairs.MPGENVAL1} AND academy_id = #{ew.paramNameValuePairs.MPGENVAL2} AND status IN (#{ew.paramNameValuePairs.MPGENVAL3},#{ew.paramNameValuePairs.MPGENVAL4}) AND score >= #{ew.paramNameValuePairs.MPGENVAL5} OR (deleted = #{ew.paramNameValuePairs.MPGENVAL6} AND remark IS NULL))) ORDER BY create_time DESC,id ASC
+target=((real_name LIKE ? AND academy_id = ? AND status IN (?,?) AND score >= ? OR (deleted = ? AND remark IS NULL))) ORDER BY create_time DESC,id ASC
+params={MPGENVAL3=1, MPGENVAL2=3, MPGENVAL1=%张%, MPGENVAL6=0, MPGENVAL5=60, MPGENVAL4=2}

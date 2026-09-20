@@ -1,0 +1,12 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:tenant-default;MODE=MySQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+platform:
+  data:
+    table-prefix: ""
+  tenant:
+    enabled: true
+    strategy: none

@@ -1,0 +1,21 @@
+plugins {
+    id 'java-library'
+}
+
+dependencies {
+    api platform(project(':platform-bom'))
+    implementation 'org.springframework.boot:spring-boot-autoconfigure'
+    implementation 'org.slf4j:slf4j-api'
+    compileOnly 'org.springframework:spring-web'
+    compileOnly 'jakarta.servlet:jakarta.servlet-api'
+    // MinIO 8.4.3 的 class 注解会被 javac 读取；仅编译期补齐，避免污染运行时。
+    compileOnly 'com.github.spotbugs:spotbugs-annotations:4.10.3'
+    // 换后端只需换实现类，接口里不出现厂商类型
+    compileOnly 'io.minio:minio'
+    testCompileOnly 'com.github.spotbugs:spotbugs-annotations:4.10.3'
+    testImplementation 'io.minio:minio'
+    testImplementation 'org.springframework:spring-web'
+    testImplementation 'jakarta.servlet:jakarta.servlet-api'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'com.tngtech.archunit:archunit-junit5:1.3.0'
+}

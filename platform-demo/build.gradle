@@ -1,0 +1,38 @@
+plugins {
+    id 'org.springframework.boot'
+    id 'io.spring.dependency-management'
+}
+
+dependencies {
+    implementation platform(project(':platform-bom'))
+    implementation project(':platform-core')
+    implementation project(':platform-core-webmvc')
+    implementation project(':platform-data')
+    implementation project(':platform-security')
+    implementation project(':platform-admin')
+    implementation project(':platform-tenant')
+    implementation project(':platform-observability')
+    implementation project(':platform-integration')
+    implementation project(':platform-ops')
+    implementation project(':platform-ratelimit-webmvc')
+    implementation('org.springframework.boot:spring-boot-starter-classic') {
+        exclude group: 'org.springframework.boot', module: 'spring-boot-grpc-server'
+        exclude group: 'org.springframework.boot', module: 'spring-boot-grpc-client'
+    }
+    implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+    implementation 'org.springframework.boot:spring-boot-starter-jackson'
+    implementation 'org.springframework.boot:spring-boot-starter-security-oauth2-authorization-server'
+    implementation 'io.micrometer:micrometer-registry-prometheus'
+    runtimeOnly 'com.h2database:h2'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
+    testImplementation 'org.springframework.security:spring-security-test'
+}
+
+bootJar {
+    enabled = true
+}
+
+jar {
+    enabled = true
+}

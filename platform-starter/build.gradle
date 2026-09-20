@@ -1,0 +1,52 @@
+plugins {
+    id 'java-library'
+}
+
+/**
+ * 新项目引这一个就够：Web 返回体、错误码、MyBatis-Plus 约定、鉴权、traceId、出站与分布式原语。
+ *
+ * 刻意不含：
+ * - platform-admin —— 管理面 CRUD 是参考实现，要不要照抄由项目决定；
+ * - platform-tenant —— 多租户默认关闭，单租户项目不该被拖进 jdbc 依赖；
+ * - platform-storage / platform-queue —— 用到才引，否则 minio / redis 白挂；
+ * - SAS 授权服务器 —— platform-security 里是 compileOnly，自建授权服务器的才引。
+ */
+dependencies {
+    api platform(project(':platform-bom'))
+    api project(':platform-core')
+    api project(':platform-core-webmvc')
+    api project(':platform-data')
+    api project(':platform-security')
+    api project(':platform-observability')
+    api project(':platform-integration')
+    api project(':platform-ops')
+    api project(':platform-ratelimit-webmvc')
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.flywaydb:flyway-core'
+}
+
+tasks.register('verifyIsolation') {
+    group = 'verification'
+    dependsOn configurations.runtimeClasspath
+    doLast {
+        def forbidden = [
+                'platform-starter-webflux',
+                'platform-ratelimit-webflux',
+                'spring-boot-starter-webflux'
+        ]
+        def artifacts = configurations.runtimeClasspath.incoming.artifacts.artifacts.collect {
+            it.id.componentIdentifier.displayName
+        }
+        forbidden.each { name ->
+            def hit = artifacts.find { it.contains(name) }
+            if (hit != null) {
+                throw new GradleException("platform-starter runtimeClasspath 含有禁止依赖 ${name}: ${hit}")
+            }
+        }
+    }
+}
+
+tasks.named('check') {
+    dependsOn 'verifyIsolation'
+}

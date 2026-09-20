@@ -1,0 +1,17 @@
+plugins {
+    id 'java-library'
+}
+
+dependencies {
+    api platform(project(':platform-bom'))
+    api project(':platform-ratelimit-core')
+    api project(':platform-ratelimit-redis')
+    api project(':platform-core-webflux')
+    api 'org.springframework.boot:spring-boot-starter-webflux'
+    compileOnly 'io.micrometer:micrometer-core'
+    compileOnly project(':platform-security')
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-webflux-test'
+    testImplementation 'io.micrometer:micrometer-core'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}

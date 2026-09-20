@@ -1,0 +1,2 @@
+cn.miniants.platform.observability.PlatformObservabilityAutoConfiguration
+cn.miniants.platform.observability.sql.PlatformSlowSqlAutoConfiguration

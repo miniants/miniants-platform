@@ -1,0 +1,4 @@
+cn.miniants.platform.security.PlatformSecurityAutoConfiguration
+cn.miniants.platform.security.sas.PlatformSasAutoConfiguration
+cn.miniants.platform.security.sas.PlatformAppSecurityAutoConfiguration
+cn.miniants.platform.security.bff.PlatformBffAutoConfiguration

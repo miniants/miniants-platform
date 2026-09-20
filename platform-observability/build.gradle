@@ -1,0 +1,21 @@
+plugins {
+    id 'java-library'
+}
+
+dependencies {
+    api platform(project(':platform-bom'))
+    api project(':platform-core')
+    api 'org.springframework.boot:spring-boot-starter-actuator'
+    api 'org.springframework.boot:spring-boot-starter-web'
+    api 'org.springframework.boot:spring-boot-starter-restclient'
+    compileOnly project(':platform-security')
+    compileOnly 'ch.qos.logback:logback-classic'
+    // 慢 SQL 拦截器按需装配，不把 MyBatis 强加给只要 traceId 的应用
+    // 只要拦截器 API，不引 starter：starter 会把 MyBatis 自动装配拖进只做链路追踪的应用
+    compileOnly 'org.mybatis:mybatis'
+    testImplementation project(':platform-security')
+    testImplementation project(':platform-core-webmvc')
+    testImplementation 'org.mybatis:mybatis'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
+}

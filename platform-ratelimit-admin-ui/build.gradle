@@ -1,0 +1,84 @@
+plugins {
+    id 'java-library'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+    withSourcesJar()
+    withJavadocJar()
+}
+
+def npmCommand = System.getProperty('os.name').toLowerCase().contains('windows') ? 'npm.cmd' : 'npm'
+def uiIndex = file('src/main/resources/META-INF/resources/platform-ratelimit-ui/index.html')
+
+tasks.register('npmCi', Exec) {
+    group = 'verification'
+    commandLine npmCommand, 'ci'
+    inputs.files('package.json', 'package-lock.json')
+    outputs.dir('node_modules')
+}
+
+tasks.register('npmTypecheck', Exec) {
+    group = 'verification'
+    dependsOn 'npmCi'
+    commandLine npmCommand, 'run', 'typecheck'
+    inputs.dir('src/frontend')
+    outputs.upToDateWhen { true }
+}
+
+tasks.register('npmTest', Exec) {
+    group = 'verification'
+    dependsOn 'npmCi'
+    commandLine npmCommand, 'run', 'test'
+    inputs.dir('src/frontend')
+    outputs.upToDateWhen { true }
+}
+
+tasks.register('npmBuild', Exec) {
+    group = 'build'
+    dependsOn 'npmCi'
+    commandLine npmCommand, 'run', 'build'
+    inputs.dir('src/frontend')
+    outputs.dir('src/main/resources/META-INF/resources/platform-ratelimit-ui')
+}
+
+tasks.register('verifyUiResources') {
+    group = 'verification'
+    dependsOn 'npmBuild'
+    doLast {
+        if (!uiIndex.exists()) {
+            throw new GradleException('platform-ratelimit-admin-ui 缺少打包后的 index.html')
+        }
+        def html = uiIndex.getText('UTF-8')
+        def assets = (html =~ /(?:src|href)="(?:\.\/)?(assets\/[^"]+)"/).collect { it[1] }
+        assets.each { relative ->
+            def asset = file("src/main/resources/META-INF/resources/platform-ratelimit-ui/${relative}")
+            if (!asset.exists()) {
+                throw new GradleException("index.html 引用的资源不存在: ${relative}")
+            }
+        }
+    }
+}
+
+tasks.named('processResources') {
+    dependsOn 'npmBuild', 'verifyUiResources'
+}
+
+tasks.named('jar') {
+    dependsOn 'verifyUiResources'
+}
+
+tasks.named('test') {
+    dependsOn 'npmTest'
+}
+
+tasks.named('check') {
+    dependsOn 'npmTypecheck', 'npmTest', 'npmBuild', 'verifyUiResources'
+}
+
+tasks.withType(Javadoc).configureEach {
+    options.encoding = 'UTF-8'
+    options.addStringOption('Xdoclint:none', '-quiet')
+}

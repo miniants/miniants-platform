@@ -1,0 +1,4 @@
+cn.miniants.platform.data.PlatformDataAutoConfiguration
+cn.miniants.platform.data.id.PlatformSnowflakeAutoConfiguration
+cn.miniants.platform.data.mapper.PlatformSqlInjectorAutoConfiguration
+cn.miniants.platform.data.flyway.PlatformFlywayAutoConfiguration

@@ -1,0 +1,20 @@
+plugins {
+    id 'java-library'
+}
+
+dependencies {
+    api platform(project(':platform-bom'))
+    api project(':platform-ratelimit-core')
+    api project(':platform-ratelimit-redis')
+    api project(':platform-core')
+    api project(':platform-core-webmvc')
+    api project(':platform-data')
+    api project(':platform-security')
+    api project(':platform-ratelimit-admin-ui')
+    api 'org.springframework.boot:spring-boot-starter-jdbc'
+    api 'org.flywaydb:flyway-core'
+    compileOnly 'org.springframework.boot:spring-boot-starter-data-redis'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    testImplementation 'com.h2database:h2'
+}

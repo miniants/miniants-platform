@@ -1,0 +1,12 @@
+platform:
+  security:
+    header-auth: true
+    enforcement: shadow
+    sas:
+      enabled: true
+      allow-ephemeral-keys: true
+      # 内核只默认拒 password；项目自己的 grant 由项目追加
+      public-denied-grants: [password, external]
+    bff:
+      enabled: true
+      client-id: platform-demo
