@@ -50,7 +50,15 @@ import java.security.KeyPairGenerator;
 import java.util.Map;
 import java.util.UUID;
 
-@AutoConfiguration
+/*
+ * 必须先于 Boot 的三组安全默认装配注册。否则 Boot 可能先生成临时 JWK、默认用户或默认
+ * Authorization Server 安全链，使平台的可轮换密钥和 BFF/SAS 契约失效。
+ */
+@AutoConfiguration(beforeName = {
+        "org.springframework.boot.security.oauth2.server.authorization.autoconfigure.servlet.OAuth2AuthorizationServerAutoConfiguration",
+        "org.springframework.boot.security.oauth2.server.authorization.autoconfigure.servlet.OAuth2AuthorizationServerJwtAutoConfiguration",
+        "org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration"
+})
 @ConditionalOnClass(name = "org.springframework.security.config.annotation.web.configurers.oauth2.server.authorization.OAuth2AuthorizationServerConfigurer")
 @ConditionalOnProperty(prefix = "platform.security.sas", name = "enabled", havingValue = "true")
 @EnableConfigurationProperties(PlatformSasProperties.class)

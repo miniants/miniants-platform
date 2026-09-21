@@ -2,7 +2,7 @@
 title: 平台登录能力
 status: active
 owner: platform
-last_verified: 2026-09-03
+last_verified: 2026-09-21
 ---
 
 # 平台登录能力
@@ -33,6 +33,9 @@ BFF（密码 / 实名 / 扫码 / 外部身份）
 - `UserTokenIssuer` 可对已解析的 `UserAccount` 直接出票，供密码、扫码、外部身份和采用方 grant 复用。
 - 密码登录成功后，如 `PasswordEncoder.upgradeEncoding` 返回 true，可回写新哈希；只在验密成功后回写，回写失败不影响本次登录。
 - 浏览器和小程序不得持有 OAuth client secret。
+- 启用平台 SAS 的采用方不需要、也不应通过 `spring.autoconfigure.exclude` 排除 Spring Boot
+  Authorization Server、JWT 或默认用户自动装配。平台先注册客户端仓储、可轮换 JWK、
+  `JwtDecoder` 与安全链，Boot 默认实现按条件退让。
 
 内核 BFF 的基础能力包括 Web 密码/刷新、当前主体与改密。实名、扫码、挑战和外部身份按属性开启。
 

@@ -2,7 +2,7 @@
 title: AutoConfiguration 规范
 status: active
 owner: platform
-last_verified: 2026-08-27
+last_verified: 2026-09-21
 ---
 
 # AutoConfiguration 规范
@@ -24,6 +24,10 @@ last_verified: 2026-08-27
 - 排序注释应说明排反后的具体故障，例如静默退化成本地实现或选择错误序列化器。
 - 依赖后续 AutoConfiguration 创建的 Bean 时，优先在 Bean 方法参数或 `ObjectProvider` 中延迟获取，不在注册期用 `@ConditionalOnBean` 误判。
 - `@Lazy` 不改变 Bean 定义注册顺序。
+- 启用 `platform.security.sas` 时，平台 SAS 必须排在 Spring Boot 的 Authorization Server、
+  JWT 与默认用户自动装配之前，让 Boot 按 `@ConditionalOnMissingBean` /
+  `@ConditionalOnDefaultWebSecurity` 正常退让。采用方不得再配置
+  `spring.autoconfigure.exclude` 排除这三组 Boot 能力；关闭平台 SAS 后，Boot 默认能力仍可按自身条件装配。
 
 ## 3. 可替换性
 
@@ -42,5 +46,6 @@ last_verified: 2026-08-27
 3. 采用方提供替代 Bean 时默认实现退让。
 4. 有顺序竞争时最终选择预期实现。
 5. `AutoConfiguration.imports` 包含应发布的配置，聚合 starter 的模块清单无遗漏。
+6. 参考应用不配置安全自动装配 exclude 仍可启动，且只使用平台的客户端仓储、可轮换 JWK 与安全链，不生成 Boot 默认用户。
 
 应用只使用标准 `@SpringBootApplication` 即可获得 classpath 上的已启用平台能力。

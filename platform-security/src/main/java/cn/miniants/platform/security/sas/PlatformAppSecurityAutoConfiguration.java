@@ -16,7 +16,7 @@ import org.springframework.security.web.SecurityFilterChain;
  * 应用已有同名 bean 时不覆盖；其它 {@link SecurityFilterChain}（如 SAS）
  * 用更低 {@code @Order} 先匹配。
  */
-@AutoConfiguration
+@AutoConfiguration(after = PlatformSasAutoConfiguration.class)
 @ConditionalOnWebApplication
 @ConditionalOnClass(name = "org.springframework.security.web.SecurityFilterChain")
 public class PlatformAppSecurityAutoConfiguration {
